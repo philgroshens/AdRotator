@@ -1,0 +1,4 @@
+AdRotator
+=========
+
+Ad Rotation script.
