@@ -91,7 +91,7 @@ line-height: 30px !important; }
 <!-- Beginning footer -->
 <footer class="footer">
       <div class="container">
-        <p class="text-muted">Node IP: <?php echo $_SERVER['X_REAL_IP']; ?></p>
+        <p class="text-muted">Node IP: <?php echo $_SERVER['X_REAL_IP']; ?> | Powered by the AdCloud Platform. | ©2014 All Rights Reserved.</p>
       </div>
     </footer>
 <!-- End of Footer -->
