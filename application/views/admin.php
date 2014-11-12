@@ -83,7 +83,7 @@ line-height: 30px !important; }
     <div style='height:20px;'></div>  
     <div class="container">
        <div class="page-header">
-        <h2>Server IP: <?php echo $_SERVER['SERVER_ADDR']; ?></h2>
+        <h2>Node: <?php echo $_SERVER['SERVER_ADDR']; ?></h2>
       </div>
         <?php echo $output; ?>
  
