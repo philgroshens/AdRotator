@@ -86,10 +86,12 @@ line-height: 18px;
 
 
 <!-- End of header-->
-    <div style='height:20px;'></div>  
+ 
     <div class="container">
     
-        
+        <div class="page-header">
+          <h1><?php echo $subject?></h1>
+        </div>
  
         <?php echo $output; ?>
  
