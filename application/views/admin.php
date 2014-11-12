@@ -53,6 +53,12 @@ line-height: 30px !important; }
 .chzn-drop, .chzn-single-with-drop { width: auto !important; }
 .chzn-container-single .chzn-single abbr { display: none; }
 #field_weight_chzn .chzn-drop { width: 50px !important; }
+.navbar-default .navbar-brand {
+color: #777;
+font-weight: 800;
+font-size: 23px;
+line-height: 18px;
+}
 </style>
 </head>
 <body>
@@ -66,7 +72,7 @@ line-height: 30px !important; }
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">adrotator</a>
+      <a class="navbar-brand" href="#">AdCloud</a>
     </div>
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
