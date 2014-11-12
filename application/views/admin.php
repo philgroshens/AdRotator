@@ -82,14 +82,18 @@ line-height: 30px !important; }
 <!-- End of header-->
     <div style='height:20px;'></div>  
     <div class="container">
-       <div class="page-header">
-        <h2>Node IP: <?php echo $_SERVER['X_REAL_IP']; ?></h2>
-      </div>
+    
+        
+ 
         <?php echo $output; ?>
  
     </div>
 <!-- Beginning footer -->
-
+<footer class="footer">
+      <div class="container">
+        <p class="text-muted">Node IP: <?php echo $_SERVER['X_REAL_IP']; ?></p>
+      </div>
+    </footer>
 <!-- End of Footer -->
 </body>
 </html>
