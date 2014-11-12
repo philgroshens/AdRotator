@@ -1,4 +1,0 @@
-AdRotator
-=========
-
-Ad Rotation script.

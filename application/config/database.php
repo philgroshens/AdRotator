@@ -90,10 +90,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => '127.0.0.1',
-	'username' => 'sdtrack_rotate',
-	'password' => 'oTMS?~1t.5dX',
-	'database' => 'sdtrack_adrotator',
+	'hostname' => 'localhost',
+	'username' => 'adcloud_mysql',
+	'password' => 'getstuffed11!',
+	'database' => 'adcloud',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => TRUE,

@@ -15,7 +15,7 @@ class Rotator_model extends CI_Model {
 
 	public function get_links($id)
 	{
-		$query = $this->db->get_where('links', array('rotator_id' => $id, 'enabled' => '2'));
+		$query = $this->db->get_where('links', array('rotator_id' => $id, 'enabled' => '1'));
 		return $query->result_array();
 		
 	}

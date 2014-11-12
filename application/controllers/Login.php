@@ -12,12 +12,9 @@ class Login extends CI_Controller {
 
  public function index()
  {
- 	if(!$this->session->userdata('logged_in')){
-   		redirect('login', 'refresh');
-} else {
-	$this->load->helper(array('form'));
-   $this->load->view('login');
-}
+$this->load->helper(array('form'));
+$this->load->view('login');
+
  }
 
 public function validate() 
@@ -26,7 +23,7 @@ public function validate()
         $this->form_validation->set_rules('password', 'Password', 'trim|required|xss_clean|callback_check_database');
  
         if($this->form_validation->run() == FALSE) {
-            $this->load->view('login',$data);
+            redirect(base_url('login'), 'refresh');
             } else {
                 //Go to private area
                 redirect(base_url('admin'), 'refresh');

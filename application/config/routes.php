@@ -78,6 +78,7 @@ $route['default_controller'] = 'rotator';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
+$route['view/(:any)'] = 'rotator/view/$1';
 $route['view/(:any)/(:any)'] = 'rotator/view/$1/$2';
 $route['admin'] = 'admin';
 

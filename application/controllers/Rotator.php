@@ -33,9 +33,9 @@ class Rotator extends CI_Controller {
 						$rotateme[$rotlinking] = (int)$rotlinks['weight'];
 
 					}
-
-				$data['rotator'] = $this->rotator_model->getRandomWeightedElement($rotateme);
-				if ($subid != NULL) {	$data['subid'] = $subid;}
+					if ($subid != NULL) {	$sbid = $subid; } else { $sbid = ''; }
+				$rotr = $this->rotator_model->getRandomWeightedElement($rotateme);
+				$data['rotator'] = $rotr.$sbid;
 			
 				$this->load->view('rotator', $data);
 			}

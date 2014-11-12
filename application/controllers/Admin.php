@@ -177,7 +177,7 @@ public function links()
 
 $state = $crud->getState();
 
-		if($state == 'edit' || $state == 'add')
+		if($state == 'edit' || $state == 'add' || $state == 'delete')
 
     {
 
