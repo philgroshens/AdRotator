@@ -1606,3 +1606,10 @@ ERROR - 2014-11-12 09:15:17 --> 404 Page Not Found: Apple-touch-icon-precomposed
 ERROR - 2014-11-12 10:31:09 --> 404 Page Not Found: Cgi-sys/suspendedpage.cgi
 ERROR - 2014-11-12 10:38:00 --> 404 Page Not Found: Cgi-sys/suspendedpage.cgi
 ERROR - 2014-11-12 10:52:59 --> 404 Page Not Found: Cgi-sys/suspendedpage.cgi
+ERROR - 2014-11-12 15:17:52 --> Severity: Warning --> mysqli::real_connect(): (28000/1045): Access denied for user 'thesevsa_rotate'@'localhost' (using password: YES) /usr/share/nginx/html/system/database/drivers/mysqli/mysqli_driver.php 110
+ERROR - 2014-11-12 15:17:52 --> Unable to connect to the database
+ERROR - 2014-11-12 16:11:31 --> 404 Page Not Found: Faviconico/index
+ERROR - 2014-11-12 17:01:45 --> 404 Page Not Found: Faviconico/index
+ERROR - 2014-11-12 17:58:47 --> 404 Page Not Found: Faviconico/index
+ERROR - 2014-11-12 18:07:11 --> Query error: Cannot delete or update a parent row: a foreign key constraint fails (`adrotator`.`links`, CONSTRAINT `links_fk1` FOREIGN KEY (`rotator_id`) REFERENCES `ad_rotators` (`id`)) - Invalid query: DELETE FROM `ad_rotators`
+WHERE `id` = '48' LIMIT 1

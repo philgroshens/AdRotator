@@ -90,10 +90,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'adcloud_mysql',
-	'password' => 'getstuffed11!',
-	'database' => 'adcloud',
+	'hostname' => 'adrotator.ccxna1k20q8d.us-east-1.rds.amazonaws.com',
+	'username' => 'the8thgoose',
+	'password' => 'yEVzAMTKsVEGe48',
+	'database' => 'adrotator',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => TRUE,
