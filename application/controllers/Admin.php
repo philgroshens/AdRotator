@@ -68,6 +68,8 @@ class Admin extends CI_Controller {
 
 			$crud = new grocery_CRUD();
 
+			$this->data['title'] = 'Rotators';
+
 			 $crud->set_theme('twitter-bootstrap');
 
 		$crud->set_table('ad_rotators');
@@ -141,7 +143,7 @@ public function links()
 		$crud->set_subject('Links');
 
 
-
+		$this->data['title'] = 'Links';
 	
 
 		$crud->columns('rotator_id','campid','name','url','weight','enabled');
