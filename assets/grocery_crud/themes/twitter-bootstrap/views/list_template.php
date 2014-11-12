@@ -51,7 +51,9 @@
 
 <!-- UTILIZADO PARA IMPRESSÃO DA LISTAGEM -->
 <div id="hidden-operations"></div>
-
+<div class="page-header">
+<h1><?php echo $subject?></h1>
+</div>
 <div class="twitter-bootstrap">
 	<div id="main-table-box">
 		<br/>

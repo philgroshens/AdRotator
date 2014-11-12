@@ -89,10 +89,7 @@ line-height: 18px;
  
     <div class="container">
     
-        <div class="page-header">
-          <h1><?php echo $subject;?></h1>
-        </div>
- 
+
         <?php echo $output; ?>
  
     </div>
