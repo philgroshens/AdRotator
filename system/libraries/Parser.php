@@ -18,7 +18,7 @@
  *
  * @package		CodeIgniter
  * @author		EllisLab Dev Team
- * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (http://ellislab.com/)
+ * @copyright	Copyright (c) 2008 - 2013, EllisLab, Inc. (http://ellislab.com/)
  * @license		http://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * @link		http://codeigniter.com
  * @since		Version 1.0
@@ -187,34 +187,26 @@ class CI_Parser {
 	 */
 	protected function _parse_pair($variable, $data, $string)
 	{
-		if (FALSE === ($matches = $this->_match_pair($string, $variable)))
+		if (FALSE === ($match = $this->_match_pair($string, $variable)))
 		{
 			return $string;
 		}
 
 		$str = '';
-		$search = $replace = array();
-		foreach ($matches as $match)
+		foreach ($data as $row)
 		{
-			$str = '';
-			foreach ($data as $row)
+			$temp = $match[1];
+			foreach ($row as $key => $val)
 			{
-				$temp = $match[1];
-				foreach ($row as $key => $val)
-				{
-					$temp = is_array($val)
+				$temp = is_array($val)
 						? $this->_parse_pair($key, $val, $temp)
 						: $this->_parse_single($key, $val, $temp);
-				}
-
-				$str .= $temp;
 			}
 
-			$search[] = $match[0];
-			$replace[] = $str;
+			$str .= $temp;
 		}
 
-		return str_replace($search, $replace, $string);
+		return str_replace($match[0], $str, $string);
 	}
 
 	// --------------------------------------------------------------------
@@ -222,14 +214,14 @@ class CI_Parser {
 	/**
 	 * Matches a variable pair
 	 *
-	 * @param	string	$string
-	 * @param	string	$variable
+	 * @param	string
+	 * @param	string
 	 * @return	mixed
 	 */
 	protected function _match_pair($string, $variable)
 	{
-		return preg_match_all('|'.preg_quote($this->l_delim).$variable.preg_quote($this->r_delim).'(.+?)'.preg_quote($this->l_delim).'/'.$variable.preg_quote($this->r_delim).'|s',
-					$string, $match, PREG_SET_ORDER)
+		return preg_match('|'.preg_quote($this->l_delim).$variable.preg_quote($this->r_delim).'(.+?)'.preg_quote($this->l_delim).'/'.$variable.preg_quote($this->r_delim).'|s',
+					$string, $match)
 			? $match : FALSE;
 	}
 

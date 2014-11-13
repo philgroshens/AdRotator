@@ -18,7 +18,7 @@
  *
  * @package		CodeIgniter
  * @author		EllisLab Dev Team
- * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (http://ellislab.com/)
+ * @copyright	Copyright (c) 2008 - 2013, EllisLab, Inc. (http://ellislab.com/)
  * @license		http://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * @link		http://codeigniter.com
  * @since		Version 2.0
@@ -60,14 +60,14 @@ class CI_Cache_memcached extends CI_Driver {
 	/**
 	 * Fetch from cache
 	 *
-	 * @param	string	$id	Cache ID
-	 * @return	mixed	Data on success, FALSE on failure
+	 * @param	mixed	unique key id
+	 * @return	mixed	data on success/false on failure
 	 */
 	public function get($id)
 	{
 		$data = $this->_memcached->get($id);
 
-		return is_array($data) ? $data[0] : $data;
+		return is_array($data) ? $data[0] : FALSE;
 	}
 
 	// ------------------------------------------------------------------------
@@ -75,26 +75,20 @@ class CI_Cache_memcached extends CI_Driver {
 	/**
 	 * Save
 	 *
-	 * @param	string	$id	Cache ID
-	 * @param	mixed	$data	Data being cached
-	 * @param	int	$ttl	Time to live
-	 * @param	bool	$raw	Whether to store the raw value
-	 * @return	bool	TRUE on success, FALSE on failure
+	 * @param	string	unique identifier
+	 * @param	mixed	data being cached
+	 * @param	int	time to live
+	 * @return	bool	true on success, false on failure
 	 */
-	public function save($id, $data, $ttl = 60, $raw = FALSE)
+	public function save($id, $data, $ttl = 60)
 	{
-		if ($raw !== TRUE)
-		{
-			$data = array($data, time(), $ttl);
-		}
-
 		if (get_class($this->_memcached) === 'Memcached')
 		{
-			return $this->_memcached->set($id, $data, $ttl);
+			return $this->_memcached->set($id, array($data, time(), $ttl), $ttl);
 		}
 		elseif (get_class($this->_memcached) === 'Memcache')
 		{
-			return $this->_memcached->set($id, $data, 0, $ttl);
+			return $this->_memcached->set($id, array($data, time(), $ttl), 0, $ttl);
 		}
 
 		return FALSE;
@@ -111,34 +105,6 @@ class CI_Cache_memcached extends CI_Driver {
 	public function delete($id)
 	{
 		return $this->_memcached->delete($id);
-	}
-
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Increment a raw value
-	 *
-	 * @param	string	$id	Cache ID
-	 * @param	int	$offset	Step/value to add
-	 * @return	mixed	New value on success or FALSE on failure
-	 */
-	public function increment($id, $offset = 1)
-	{
-		return $this->_memcached->increment($id, $offset);
-	}
-
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Decrement a raw value
-	 *
-	 * @param	string	$id	Cache ID
-	 * @param	int	$offset	Step/value to reduce by
-	 * @return	mixed	New value on success or FALSE on failure
-	 */
-	public function decrement($id, $offset = 1)
-	{
-		return $this->_memcached->decrement($id, $offset);
 	}
 
 	// ------------------------------------------------------------------------

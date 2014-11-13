@@ -18,7 +18,7 @@
  *
  * @package		CodeIgniter
  * @author		EllisLab Dev Team
- * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (http://ellislab.com/)
+ * @copyright	Copyright (c) 2008 - 2013, EllisLab, Inc. (http://ellislab.com/)
  * @license		http://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * @link		http://codeigniter.com
  * @since		Version 1.0
@@ -59,19 +59,6 @@ class CI_Security {
 		'%3f',		// ?
 		'%3b',		// ;
 		'%3d'		// =
-	);
-
-	/**
-	 * HTML5 entities
-	 *
-	 * @var	array
-	 */
-	public $html5_entities = array(
-		'&colon;'	=> ':',
-		'&lpar;'	=> '(',
-		'&rpar;'	=> ')',
-		'&newline;'	=> "\n",
-		'&tab;'		=> "\t"
 	);
 
 	/**
@@ -130,6 +117,7 @@ class CI_Security {
 		'document.write'	=> '[removed]',
 		'.parentNode'		=> '[removed]',
 		'.innerHTML'		=> '[removed]',
+		'window.location'	=> '[removed]',
 		'-moz-binding'		=> '[removed]',
 		'<!--'				=> '&lt;!--',
 		'-->'				=> '--&gt;',
@@ -144,13 +132,9 @@ class CI_Security {
 	 */
 	protected $_never_allowed_regex = array(
 		'javascript\s*:',
-		'(document|(document\.)?window)\.(location|on\w*)',
 		'expression\s*(\(|&\#40;)', // CSS and IE
 		'vbscript\s*:', // IE, surprise!
-		'wscript\s*:', // IE
-		'jscript\s*:', // IE
-		'vbs\s*:', // IE
-		'Redirect\s+30\d',
+		'Redirect\s+302',
 		"([\"'])?data\s*:[^\\1]*?base64[^\\1]*?,[^\\1]*?\\1?"
 	);
 
@@ -359,11 +343,7 @@ class CI_Security {
 		 *
 		 * Note: Use rawurldecode() so it does not remove plus signs
 		 */
-		do
-		{
-			$str = rawurldecode($str);
-		}
-		while (preg_match('/%[0-9a-f]{2,}/i', $str));
+		$str = rawurldecode($str);
 
 		/*
 		 * Convert character entities to ASCII
@@ -422,9 +402,8 @@ class CI_Security {
 		 * These words are compacted back to their correct state.
 		 */
 		$words = array(
-			'javascript', 'expression', 'vbscript', 'jscript', 'wscript',
-			'vbs', 'script', 'base64', 'applet', 'alert', 'document',
-			'write', 'cookie', 'window', 'confirm', 'prompt'
+			'javascript', 'expression', 'vbscript', 'script', 'base64',
+			'applet', 'alert', 'document', 'write', 'cookie', 'window'
 		);
 
 		foreach ($words as $word)
@@ -441,12 +420,6 @@ class CI_Security {
 		 * We used to do some version comparisons and use of stripos for PHP5,
 		 * but it is dog slow compared to these simplified non-capturing
 		 * preg_match(), especially if the pattern exists in the string
-		 *
-		 * Note: It was reported that not only space characters, but all in
-		 * the following pattern can be parsed as separators between a tag name
-		 * and its attributes: [\d\s"\'`;,\/\=\(\x00\x0B\x09\x0C]
-		 * ... however, remove_invisible_characters() above already strips the
-		 * hex-encoded ones, so we'll skip them below.
 		 */
 		do
 		{
@@ -454,12 +427,12 @@ class CI_Security {
 
 			if (preg_match('/<a/i', $str))
 			{
-				$str = preg_replace_callback('#<a[^a-z0-9>]+([^>]*?)(?:>|$)#si', array($this, '_js_link_removal'), $str);
+				$str = preg_replace_callback('#<a\s+([^>]*?)(?:>|$)#si', array($this, '_js_link_removal'), $str);
 			}
 
 			if (preg_match('/<img/i', $str))
 			{
-				$str = preg_replace_callback('#<img[^a-z0-9]+([^>]*?)(?:\s?/?>|$)#si', array($this, '_js_img_removal'), $str);
+				$str = preg_replace_callback('#<img\s+([^>]*?)(?:\s?/?>|$)#si', array($this, '_js_img_removal'), $str);
 			}
 
 			if (preg_match('/script|xss/i', $str))
@@ -483,7 +456,7 @@ class CI_Security {
 		 * So this: <blink>
 		 * Becomes: &lt;blink&gt;
 		 */
-		$naughty = 'alert|prompt|confirm|applet|audio|basefont|base|behavior|bgsound|blink|body|embed|expression|form|frameset|frame|head|html|ilayer|iframe|input|button|select|isindex|layer|link|meta|keygen|object|plaintext|style|script|textarea|title|math|video|svg|xml|xss';
+		$naughty = 'alert|applet|audio|basefont|base|behavior|bgsound|blink|body|embed|expression|form|frameset|frame|head|html|ilayer|iframe|input|isindex|layer|link|meta|object|plaintext|style|script|textarea|title|video|xml|xss';
 		$str = preg_replace_callback('#<(/*\s*)('.$naughty.')([^><]*)([><]*)#is', array($this, '_sanitize_naughty_html'), $str);
 
 		/*
@@ -498,7 +471,7 @@ class CI_Security {
 		 * For example:	eval('some code')
 		 * Becomes:	eval&#40;'some code'&#41;
 		 */
-		$str = preg_replace('#(alert|prompt|confirm|cmd|passthru|eval|exec|expression|system|fopen|fsockopen|file|file_get_contents|readfile|unlink)(\s*)\((.*?)\)#si',
+		$str = preg_replace('#(alert|cmd|passthru|eval|exec|expression|system|fopen|fsockopen|file|file_get_contents|readfile|unlink)(\s*)\((.*?)\)#si',
 					'\\1\\2&#40;\\3&#41;',
 					$str);
 
@@ -578,13 +551,13 @@ class CI_Security {
 
 		do
 		{
-			$str_compare = $str;
+			$matches = $matches1 = 0;
 
-			$str = preg_replace('/(&#x0*[0-9a-f]{2,5})(?![0-9a-f;])/iS', '$1;', $str);
-			$str = preg_replace('/(&#0*\d{2,4})(?![0-9;])/S', '$1;', $str);
+			$str = preg_replace('~(&#x0*[0-9a-f]{2,5});?~iS', '$1;', $str, -1, $matches);
+			$str = preg_replace('~(&#\d{2,4});?~S', '$1;', $str, -1, $matches1);
 			$str = html_entity_decode($str, ENT_COMPAT, $charset);
 		}
-		while ($str_compare !== $str);
+		while ($matches OR $matches1);
 
 		return $str;
 	}
@@ -675,7 +648,8 @@ class CI_Security {
 	 */
 	protected function _remove_evil_attributes($str, $is_image)
 	{
-		$evil_attributes = array('on\w*', 'style', 'xmlns', 'formaction', 'form', 'xlink:href');
+		// All javascript event handlers (e.g. onload, onclick, onmouseover), style, and xmlns
+		$evil_attributes = array('on\w*', 'style', 'xmlns', 'formaction');
 
 		if ($is_image === TRUE)
 		{
@@ -691,7 +665,7 @@ class CI_Security {
 			$attribs = array();
 
 			// find occurrences of illegal attribute strings with quotes (042 and 047 are octal quotes)
-			preg_match_all('/(?<!\w)('.implode('|', $evil_attributes).')\s*=\s*(\042|\047)([^\\2]*?)(\\2)/is', $str, $matches, PREG_SET_ORDER);
+			preg_match_all('/('.implode('|', $evil_attributes).')\s*=\s*(\042|\047)([^\\2]*?)(\\2)/is', $str, $matches, PREG_SET_ORDER);
 
 			foreach ($matches as $attr)
 			{
@@ -699,7 +673,7 @@ class CI_Security {
 			}
 
 			// find occurrences of illegal attribute strings without quotes
-			preg_match_all('/(?<!\w)('.implode('|', $evil_attributes).')\s*=\s*([^\s>]*)/is', $str, $matches, PREG_SET_ORDER);
+			preg_match_all('/('.implode('|', $evil_attributes).')\s*=\s*([^\s>]*)/is', $str, $matches, PREG_SET_ORDER);
 
 			foreach ($matches as $attr)
 			{
@@ -753,7 +727,7 @@ class CI_Security {
 	protected function _js_link_removal($match)
 	{
 		return str_replace($match[1],
-					preg_replace('#href=.*?(?:(?:alert|prompt|confirm)(?:\(|&\#40;)|javascript:|livescript:|mocha:|charset=|window\.|document\.|\.cookie|<script|<xss|data\s*:)#si',
+					preg_replace('#href=.*?(?:alert\(|alert&\#40;|javascript:|livescript:|mocha:|charset=|window\.|document\.|\.cookie|<script|<xss|data\s*:)#si',
 							'',
 							$this->_filter_attributes(str_replace(array('<', '>'), '', $match[1]))
 					),
@@ -778,7 +752,7 @@ class CI_Security {
 	protected function _js_img_removal($match)
 	{
 		return str_replace($match[1],
-					preg_replace('#src=.*?(?:(?:alert|prompt|confirm)(?:\(|&\#40;)|javascript:|livescript:|mocha:|charset=|window\.|document\.|\.cookie|<script|<xss|base64\s*,)#si',
+					preg_replace('#src=.*?(?:alert\(|alert&\#40;|javascript:|livescript:|mocha:|charset=|window\.|document\.|\.cookie|<script|<xss|base64\s*,)#si',
 							'',
 							$this->_filter_attributes(str_replace(array('<', '>'), '', $match[1]))
 					),
@@ -836,14 +810,7 @@ class CI_Security {
 	 */
 	protected function _decode_entity($match)
 	{
-		// entity_decode() won't convert dangerous HTML5 entities
-		// (it could, but ENT_HTML5 is only available since PHP 5.4),
-		// so we'll do that here
-		return str_ireplace(
-			array_keys($this->html5_entities),
-			array_values($this->html5_entities),
-			$this->entity_decode($match[0], strtoupper(config_item('charset')))
-		);
+		return $this->entity_decode($match[0], strtoupper(config_item('charset')));
 	}
 
 	// --------------------------------------------------------------------
@@ -862,7 +829,7 @@ class CI_Security {
 		 */
 
 		// 901119URL5918AMP18930PROTECT8198
-		$str = preg_replace('|\&([a-z\_0-9\-]+)\=([a-z\_0-9\-/]+)|i', $this->xss_hash().'\\1=\\2', $str);
+		$str = preg_replace('|\&([a-z\_0-9\-]+)\=([a-z\_0-9\-]+)|i', $this->xss_hash().'\\1=\\2', $str);
 
 		/*
 		 * Validate standard character entities
@@ -870,15 +837,14 @@ class CI_Security {
 		 * Add a semicolon if missing.  We do this to enable
 		 * the conversion of entities to ASCII later.
 		 */
-		$str = preg_replace('/(&#\d{2,4})(?![0-9;])/', '$1;', $str);
-		$str = preg_replace('/(&[a-z]{2,})(?![a-z;])/i', '$1;', $str);
+		$str = preg_replace('#(&\#?[0-9a-z]{2,})([\x00-\x20])*;?#i', '\\1;\\2', $str);
 
 		/*
 		 * Validate UTF16 two byte encoding (x00)
 		 *
 		 * Just as above, adds a semicolon if missing.
 		 */
-		$str = preg_replace('/(&#x0*[0-9a-f]{2,5})(?![0-9a-f;])/i', '$1;', $str);
+		$str = preg_replace('#(&\#x?)([0-9A-F]+);?#i', '\\1\\2;', $str);
 
 		/*
 		 * Un-Protect GET variables in URLs

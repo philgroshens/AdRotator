@@ -18,7 +18,7 @@
  *
  * @package		CodeIgniter
  * @author		EllisLab Dev Team
- * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (http://ellislab.com/)
+ * @copyright	Copyright (c) 2008 - 2013, EllisLab, Inc. (http://ellislab.com/)
  * @license		http://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * @link		http://codeigniter.com
  * @since		Version 1.0
@@ -56,10 +56,11 @@ if ( ! function_exists('set_cookie'))
 	 * @param	bool	true makes the cookie accessible via http(s) only (no javascript)
 	 * @return	void
 	 */
-	function set_cookie($name, $value = '', $expire = '', $domain = '', $path = '/', $prefix = '', $secure = FALSE, $httponly = FALSE)
+	function set_cookie($name = '', $value = '', $expire = '', $domain = '', $path = '/', $prefix = '', $secure = FALSE, $httponly = FALSE)
 	{
 		// Set the config file options
-		get_instance()->input->set_cookie($name, $value, $expire, $domain, $path, $prefix, $secure, $httponly);
+		$CI =& get_instance();
+		$CI->input->set_cookie($name, $value, $expire, $domain, $path, $prefix, $secure, $httponly);
 	}
 }
 
@@ -74,11 +75,11 @@ if ( ! function_exists('get_cookie'))
 	 * @param	bool
 	 * @return	mixed
 	 */
-	function get_cookie($index, $xss_clean = NULL)
+	function get_cookie($index = '', $xss_clean = FALSE)
 	{
-		is_bool($xss_clean) OR $xss_clean = (config_item('global_xss_filtering') === TRUE);
+		$CI =& get_instance();
 		$prefix = isset($_COOKIE[$index]) ? '' : config_item('cookie_prefix');
-		return get_instance()->input->cookie($prefix.$index, $xss_clean);
+		return $CI->input->cookie($prefix.$index, $xss_clean);
 	}
 }
 
@@ -95,7 +96,7 @@ if ( ! function_exists('delete_cookie'))
 	 * @param	string	the cookie prefix
 	 * @return	void
 	 */
-	function delete_cookie($name, $domain = '', $path = '/', $prefix = '')
+	function delete_cookie($name = '', $domain = '', $path = '/', $prefix = '')
 	{
 		set_cookie($name, '', '', $domain, $path, $prefix);
 	}

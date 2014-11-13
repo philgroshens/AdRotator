@@ -18,7 +18,7 @@
  *
  * @package		CodeIgniter
  * @author		EllisLab Dev Team
- * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (http://ellislab.com/)
+ * @copyright	Copyright (c) 2008 - 2013, EllisLab, Inc. (http://ellislab.com/)
  * @license		http://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * @link		http://codeigniter.com
  * @since		Version 1.0
@@ -45,17 +45,20 @@ if ( ! function_exists('is_php'))
 	/**
 	 * Determines if the current version of PHP is greater then the supplied value
 	 *
+	 * Since there are a few places where we conditionally test for PHP > 5.3
+	 * we'll set a static variable.
+	 *
 	 * @param	string
 	 * @return	bool	TRUE if the current version is $version or higher
 	 */
-	function is_php($version)
+	function is_php($version = '5.3.0')
 	{
 		static $_is_php;
 		$version = (string) $version;
 
 		if ( ! isset($_is_php[$version]))
 		{
-			$_is_php[$version] = version_compare(PHP_VERSION, $version, '>=');
+			$_is_php[$version] = (version_compare(PHP_VERSION, $version) >= 0);
 		}
 
 		return $_is_php[$version];
@@ -73,14 +76,13 @@ if ( ! function_exists('is_really_writable'))
 	 * the file, based on the read-only attribute. is_writable() is also unreliable
 	 * on Unix servers if safe_mode is on.
 	 *
-	 * @link	https://bugs.php.net/bug.php?id=54709
 	 * @param	string
 	 * @return	void
 	 */
 	function is_really_writable($file)
 	{
 		// If we're on a Unix server with safe_mode off we call is_writable
-		if (DIRECTORY_SEPARATOR === '/' && (is_php('5.4') OR ! ini_get('safe_mode')))
+		if (DIRECTORY_SEPARATOR === '/' && (is_php('5.4') OR (bool) @ini_get('safe_mode') === FALSE))
 		{
 			return is_writable($file);
 		}
@@ -91,17 +93,17 @@ if ( ! function_exists('is_really_writable'))
 		if (is_dir($file))
 		{
 			$file = rtrim($file, '/').'/'.md5(mt_rand());
-			if (($fp = @fopen($file, 'ab')) === FALSE)
+			if (($fp = @fopen($file, FOPEN_WRITE_CREATE)) === FALSE)
 			{
 				return FALSE;
 			}
 
 			fclose($fp);
-			@chmod($file, 0777);
+			@chmod($file, DIR_WRITE_MODE);
 			@unlink($file);
 			return TRUE;
 		}
-		elseif ( ! is_file($file) OR ($fp = @fopen($file, 'ab')) === FALSE)
+		elseif ( ! is_file($file) OR ($fp = @fopen($file, FOPEN_WRITE_CREATE)) === FALSE)
 		{
 			return FALSE;
 		}
@@ -127,7 +129,7 @@ if ( ! function_exists('load_class'))
 	 * @param	string	the class name prefix
 	 * @return	object
 	 */
-	function &load_class($class, $directory = 'libraries', $param = NULL)
+	function &load_class($class, $directory = 'libraries', $prefix = 'CI_')
 	{
 		static $_classes = array();
 
@@ -145,7 +147,7 @@ if ( ! function_exists('load_class'))
 		{
 			if (file_exists($path.$directory.'/'.$class.'.php'))
 			{
-				$name = 'CI_'.$class;
+				$name = $prefix.$class;
 
 				if (class_exists($name, FALSE) === FALSE)
 				{
@@ -163,7 +165,7 @@ if ( ! function_exists('load_class'))
 
 			if (class_exists($name, FALSE) === FALSE)
 			{
-				require_once(APPPATH.$directory.'/'.$name.'.php');
+				require_once(APPPATH.$directory.'/'.config_item('subclass_prefix').$class.'.php');
 			}
 		}
 
@@ -174,15 +176,13 @@ if ( ! function_exists('load_class'))
 			// self-referencing loop with the Exceptions class
 			set_status_header(503);
 			echo 'Unable to locate the specified class: '.$class.'.php';
-			exit(5); // EXIT_UNK_CLASS
+			exit(EXIT_UNKNOWN_CLASS);
 		}
 
 		// Keep track of what we just loaded
 		is_loaded($class);
 
-		$_classes[$class] = isset($param)
-			? new $name($param)
-			: new $name();
+		$_classes[$class] = new $name();
 		return $_classes[$class];
 	}
 }
@@ -247,7 +247,7 @@ if ( ! function_exists('get_config'))
 			{
 				set_status_header(503);
 				echo 'The configuration file does not exist.';
-				exit(3); // EXIT_CONFIG
+				exit(EXIT_CONFIG);
 			}
 
 			// Does the $config array exist in the file?
@@ -255,7 +255,7 @@ if ( ! function_exists('get_config'))
 			{
 				set_status_header(503);
 				echo 'Your config file does not appear to be formatted correctly.';
-				exit(3); // EXIT_CONFIG
+				exit(EXIT_CONFIG);
 			}
 
 			// references cannot be directly assigned to static variables, so we use an array
@@ -394,17 +394,16 @@ if ( ! function_exists('show_error'))
 		$status_code = abs($status_code);
 		if ($status_code < 100)
 		{
-			$exit_status = $status_code + 9; // 9 is EXIT__AUTO_MIN
-			if ($exit_status > 125) // 125 is EXIT__AUTO_MAX
+			$exit_status = $status_code + EXIT__AUTO_MIN;
+			if ($exit_status > EXIT__AUTO_MAX)
 			{
-				$exit_status = 1; // EXIT_ERROR
+				$exit_status = EXIT_ERROR;
 			}
-
 			$status_code = 500;
 		}
 		else
 		{
-			$exit_status = 1; // EXIT_ERROR
+			$exit_status = EXIT_ERROR;
 		}
 
 		$_error =& load_class('Exceptions', 'core');
@@ -432,7 +431,7 @@ if ( ! function_exists('show_404'))
 	{
 		$_error =& load_class('Exceptions', 'core');
 		$_error->show_404($page, $log_error);
-		exit(4); // EXIT_UNKNOWN_FILE
+		exit(EXIT_UNKNOWN_FILE);
 	}
 }
 
@@ -589,6 +588,8 @@ if ( ! function_exists('_exception_handler'))
 			set_status_header(500);
 		}
 
+		$_error =& load_class('Exceptions', 'core');
+
 		// Should we ignore the error? We'll get the current error_reporting
 		// level and add its bits with the severity bits to find out.
 		if (($severity & error_reporting()) !== $severity)
@@ -596,21 +597,20 @@ if ( ! function_exists('_exception_handler'))
 			return;
 		}
 
-		$_error =& load_class('Exceptions', 'core');
-		$_error->log_exception($severity, $message, $filepath, $line);
-
 		// Should we display the error?
-		if (ini_get('display_errors'))
+		if ((bool) ini_get('display_errors') === TRUE)
 		{
 			$_error->show_php_error($severity, $message, $filepath, $line);
 		}
+
+		$_error->log_exception($severity, $message, $filepath, $line);
 
 		// If the error is fatal, the execution of the script should be stopped because
 		// errors can't be recovered from. Halting the script conforms with PHP's
 		// default error handling. See http://www.php.net/manual/en/errorfunc.constants.php
 		if ($is_error)
 		{
-			exit(1); // EXIT_ERROR
+			exit(EXIT_ERROR);
 		}
 	}
 }
@@ -634,7 +634,7 @@ if ( ! function_exists('_shutdown_handler'))
 	 */
 	function _shutdown_handler()
 	{
-		$last_error = error_get_last();
+		$last_error = function_exists('error_get_last') ? error_get_last() : NULL;
 		if (isset($last_error) &&
 			($last_error['type'] & (E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING)))
 		{
@@ -755,11 +755,6 @@ if ( ! function_exists('function_usable'))
 	 * *suhosin.executor.disable_eval*. These settings will just
 	 * terminate script execution if a disabled function is executed.
 	 *
-	 * The above described behavior turned out to be a bug in Suhosin,
-	 * but even though a fix was commited for 0.9.34 on 2012-02-12,
-	 * that version is yet to be released. This function will therefore
-	 * be just temporary, but would probably be kept for a few years.
-	 *
 	 * @link	http://www.hardened-php.net/suhosin/
 	 * @param	string	$function_name	Function to check for
 	 * @return	bool	TRUE if the function exists and is safe to call,
@@ -775,9 +770,9 @@ if ( ! function_exists('function_usable'))
 			{
 				if (extension_loaded('suhosin'))
 				{
-					$_suhosin_func_blacklist = explode(',', trim(ini_get('suhosin.executor.func.blacklist')));
+					$_suhosin_func_blacklist = explode(',', trim(@ini_get('suhosin.executor.func.blacklist')));
 
-					if ( ! in_array('eval', $_suhosin_func_blacklist, TRUE) && ini_get('suhosin.executor.disable_eval'))
+					if ( ! in_array('eval', $_suhosin_func_blacklist, TRUE) && @ini_get('suhosin.executor.disable_eval'))
 					{
 						$_suhosin_func_blacklist[] = 'eval';
 					}

@@ -18,7 +18,7 @@
  *
  * @package		CodeIgniter
  * @author		EllisLab Dev Team
- * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (http://ellislab.com/)
+ * @copyright	Copyright (c) 2008 - 2013, EllisLab, Inc. (http://ellislab.com/)
  * @license		http://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * @link		http://codeigniter.com
  * @since		Version 1.0
@@ -174,29 +174,22 @@ class CI_Loader {
 	 * @param	string	$library	Library name
 	 * @param	array	$params		Optional parameters to pass to the library class constructor
 	 * @param	string	$object_name	An optional object name to assign to
-	 * @return	object
+	 * @return	void
 	 */
-	public function library($library, $params = NULL, $object_name = NULL)
+	public function library($library = '', $params = NULL, $object_name = NULL)
 	{
 		if (empty($library))
 		{
-			return $this;
+			return;
 		}
 		elseif (is_array($library))
 		{
-			foreach ($library as $key => $value)
+			foreach ($library as $class)
 			{
-				if (is_int($key))
-				{
-					$this->library($value, $params);
-				}
-				else
-				{
-					$this->library($key, $params, $value);
-				}
+				$this->library($class, $params);
 			}
 
-			return $this;
+			return;
 		}
 
 		if ($params !== NULL && ! is_array($params))
@@ -205,7 +198,6 @@ class CI_Loader {
 		}
 
 		$this->_ci_load_class($library, $params, $object_name);
-		return $this;
 	}
 
 	// --------------------------------------------------------------------
@@ -213,18 +205,18 @@ class CI_Loader {
 	/**
 	 * Model Loader
 	 *
-	 * Loads and instantiates models.
+	 * Loads and instantiates libraries.
 	 *
 	 * @param	string	$model		Model name
 	 * @param	string	$name		An optional object name to assign to
 	 * @param	bool	$db_conn	An optional database connection configuration to initialize
-	 * @return	object
+	 * @return	void
 	 */
 	public function model($model, $name = '', $db_conn = FALSE)
 	{
 		if (empty($model))
 		{
-			return $this;
+			return;
 		}
 		elseif (is_array($model))
 		{
@@ -232,8 +224,7 @@ class CI_Loader {
 			{
 				is_int($key) ? $this->model($value, '', $db_conn) : $this->model($key, $value, $db_conn);
 			}
-
-			return $this;
+			return;
 		}
 
 		$path = '';
@@ -255,7 +246,7 @@ class CI_Loader {
 
 		if (in_array($name, $this->_ci_models, TRUE))
 		{
-			return $this;
+			return;
 		}
 
 		$CI =& get_instance();
@@ -271,7 +262,7 @@ class CI_Loader {
 				$db_conn = '';
 			}
 
-			$this->database($db_conn, FALSE, TRUE);
+			$CI->load->database($db_conn, FALSE, TRUE);
 		}
 
 		if ( ! class_exists('CI_Model', FALSE))
@@ -292,7 +283,7 @@ class CI_Loader {
 
 			$CI->$name = new $model();
 			$this->_ci_models[] = $name;
-			return $this;
+			return;
 		}
 
 		// couldn't find the model
@@ -309,8 +300,8 @@ class CI_Loader {
 	 * @param	bool	$query_builder	Whether to enable Query Builder
 	 *					(overrides the configuration setting)
 	 *
-	 * @return	object|bool	Database object if $return is set to TRUE,
-	 *					FALSE on failure, CI_Loader instance in any other case
+	 * @return	void|object|bool	Database object if $return is set to TRUE,
+	 *					FALSE on failure, void in any other case
 	 */
 	public function database($params = '', $return = FALSE, $query_builder = NULL)
 	{
@@ -336,7 +327,6 @@ class CI_Loader {
 
 		// Load the DB class
 		$CI->db =& DB($params, $query_builder);
-		return $this;
 	}
 
 	// --------------------------------------------------------------------
@@ -345,8 +335,8 @@ class CI_Loader {
 	 * Load the Database Utilities Class
 	 *
 	 * @param	object	$db	Database object
-	 * @param	bool	$return	Whether to return the DB Utilities class object or not
-	 * @return	object
+	 * @param	bool	$return	Whether to return the DB Forge class object or not
+	 * @return	void|object
 	 */
 	public function dbutil($db = NULL, $return = FALSE)
 	{
@@ -368,7 +358,6 @@ class CI_Loader {
 		}
 
 		$CI->dbutil = new $class($db);
-		return $this;
 	}
 
 	// --------------------------------------------------------------------
@@ -378,7 +367,7 @@ class CI_Loader {
 	 *
 	 * @param	object	$db	Database object
 	 * @param	bool	$return	Whether to return the DB Forge class object or not
-	 * @return	object
+	 * @return	void|object
 	 */
 	public function dbforge($db = NULL, $return = FALSE)
 	{
@@ -412,7 +401,6 @@ class CI_Loader {
 		}
 
 		$CI->dbforge = new $class($db);
-		return $this;
 	}
 
 	// --------------------------------------------------------------------
@@ -427,7 +415,7 @@ class CI_Loader {
 	 *				to be extracted for use in the view
 	 * @param	bool	$return	Whether to return the view output
 	 *				or leave it to the Output class
-	 * @return	object|string
+	 * @return	void|string
 	 */
 	public function view($view, $vars = array(), $return = FALSE)
 	{
@@ -441,7 +429,7 @@ class CI_Loader {
 	 *
 	 * @param	string	$path	File path
 	 * @param	bool	$return	Whether to return the file output
-	 * @return	object|string
+	 * @return	void|string
 	 */
 	public function file($path, $return = FALSE)
 	{
@@ -460,9 +448,9 @@ class CI_Loader {
 	 *					An associative array or object containing values
 	 *					to be set, or a value's name if string
 	 * @param 	string	$val	Value to set, only used if $vars is a string
-	 * @return	object
+	 * @return	void
 	 */
-	public function vars($vars, $val = '')
+	public function vars($vars = array(), $val = '')
 	{
 		if (is_string($vars))
 		{
@@ -478,25 +466,22 @@ class CI_Loader {
 				$this->_ci_cached_vars[$key] = $val;
 			}
 		}
-
-		return $this;
 	}
 
 	// --------------------------------------------------------------------
 
 	/**
 	 * Clear Cached Variables
-	 *
+	 * 
 	 * Clears the cached variables.
-	 *
-	 * @return  object
+	 * 
+	 * @return  void
 	 */
 	public function clear_vars()
 	{
 		$this->_ci_cached_vars = array();
-		return $this;
 	}
-
+	
 	// --------------------------------------------------------------------
 
 	/**
@@ -532,7 +517,7 @@ class CI_Loader {
 	 * Helper Loader
 	 *
 	 * @param	string|string[]	$helpers	Helper name(s)
-	 * @return	object
+	 * @return	void
 	 */
 	public function helper($helpers = array())
 	{
@@ -589,8 +574,6 @@ class CI_Loader {
 				show_error('Unable to load the requested file: helpers/'.$helper.'.php');
 			}
 		}
-
-		return $this;
 	}
 
 	// --------------------------------------------------------------------
@@ -603,11 +586,11 @@ class CI_Loader {
 	 *
 	 * @uses	CI_Loader::helper()
 	 * @param	string|string[]	$helpers	Helper name(s)
-	 * @return	object
+	 * @return	void
 	 */
 	public function helpers($helpers = array())
 	{
-		return $this->helper($helpers);
+		$this->helper($helpers);
 	}
 
 	// --------------------------------------------------------------------
@@ -619,19 +602,18 @@ class CI_Loader {
 	 *
 	 * @param	string|string[]	$files	List of language file names to load
 	 * @param	string		Language name
-	 * @return	object
+	 * @return	void
 	 */
-	public function language($files, $lang = '')
+	public function language($files = array(), $lang = '')
 	{
-		$LNG =& get_instance()->lang;
+		$CI =& get_instance();
+
 		is_array($files) OR $files = array($files);
 
 		foreach ($files as $langfile)
 		{
-			$LNG->load($langfile, $lang);
+			$CI->lang->load($langfile, $lang);
 		}
-
-		return $this;
 	}
 
 	// --------------------------------------------------------------------
@@ -647,9 +629,10 @@ class CI_Loader {
 	 * @param	bool	$fail_gracefully	Whether to just return FALSE or display an error message
 	 * @return	bool	TRUE if the file was loaded correctly or FALSE on failure
 	 */
-	public function config($file, $use_sections = FALSE, $fail_gracefully = FALSE)
+	public function config($file = '', $use_sections = FALSE, $fail_gracefully = FALSE)
 	{
-		return get_instance()->config->load($file, $use_sections, $fail_gracefully);
+		$CI =& get_instance();
+		return $CI->config->load($file, $use_sections, $fail_gracefully);
 	}
 
 	// --------------------------------------------------------------------
@@ -663,10 +646,10 @@ class CI_Loader {
 	 * @param	array		$params		Optional parameters to pass to the driver
 	 * @param	string		$object_name	An optional object name to assign to
 	 *
-	 * @return	object|bool	Object or FALSE on failure if $library is a string
-	 *				and $object_name is set. CI_Loader instance otherwise.
+	 * @return	void|object|bool	Object or FALSE on failure if $library is a string
+	 *					and $object_name is set. void otherwise.
 	 */
-	public function driver($library, $params = NULL, $object_name = NULL)
+	public function driver($library = '', $params = NULL, $object_name = NULL)
 	{
 		if (is_array($library))
 		{
@@ -674,10 +657,10 @@ class CI_Loader {
 			{
 				$this->driver($driver);
 			}
-
-			return $this;
+			return;
 		}
-		elseif (empty($library))
+
+		if ($library === '')
 		{
 			return FALSE;
 		}
@@ -713,7 +696,7 @@ class CI_Loader {
 	 *
 	 * @param	string	$path		Path to add
 	 * @param 	bool	$view_cascade	(default: TRUE)
-	 * @return	object
+	 * @return	void
 	 */
 	public function add_package_path($path, $view_cascade = TRUE)
 	{
@@ -728,8 +711,6 @@ class CI_Loader {
 		// Add config file path
 		$config =& $this->_ci_get_component('config');
 		$config->_config_paths[] = $path;
-
-		return $this;
 	}
 
 	// --------------------------------------------------------------------
@@ -757,7 +738,7 @@ class CI_Loader {
 	 * added path will be removed removed.
 	 *
 	 * @param	string	$path	Path to remove
-	 * @return	object
+	 * @return	void
 	 */
 	public function remove_package_path($path = '')
 	{
@@ -799,8 +780,6 @@ class CI_Loader {
 		$this->_ci_model_paths = array_unique(array_merge($this->_ci_model_paths, array(APPPATH)));
 		$this->_ci_view_paths = array_merge($this->_ci_view_paths, array(APPPATH.'views/' => TRUE));
 		$config->_config_paths = array_unique(array_merge($config->_config_paths, array(APPPATH)));
-
-		return $this;
 	}
 
 	// --------------------------------------------------------------------
@@ -816,7 +795,7 @@ class CI_Loader {
 	 * @used-by	CI_Loader::view()
 	 * @used-by	CI_Loader::file()
 	 * @param	array	$_ci_data	Data to load
-	 * @return	object
+	 * @return	void
 	 */
 	protected function _ci_load($_ci_data)
 	{
@@ -901,7 +880,9 @@ class CI_Loader {
 		// If the PHP installation does not support short tags we'll
 		// do a little string replacement, changing the short tags
 		// to standard PHP echo statements.
-		if ( ! is_php('5.4') && ! ini_get('short_open_tag') && config_item('rewrite_short_tags') === TRUE && function_usable('eval'))
+		if ( ! is_php('5.4') && (bool) @ini_get('short_open_tag') === FALSE
+			&& config_item('rewrite_short_tags') === TRUE && function_usable('eval')
+		)
 		{
 			echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', file_get_contents($_ci_path))));
 		}
@@ -938,8 +919,6 @@ class CI_Loader {
 			$_ci_CI->output->append_output(ob_get_contents());
 			@ob_end_clean();
 		}
-
-		return $this;
 	}
 
 	// --------------------------------------------------------------------
@@ -1215,9 +1194,10 @@ class CI_Loader {
 		// Load any custom config file
 		if (count($autoload['config']) > 0)
 		{
-			foreach ($autoload['config'] as $val)
+			$CI =& get_instance();
+			foreach ($autoload['config'] as $key => $val)
 			{
-				$this->config($val);
+				$CI->config->load($val);
 			}
 		}
 

@@ -28,34 +28,38 @@ if(!empty($list)){ ?>
 					</td>
 				<?php }?>
 				<?php if(!$unset_delete || !$unset_edit || !empty($actions)){?>
-				<td align="left" width="30%">
+				<td align="left">
 					<div class="tools">
 						<div class="btn-group">
-							
+							<button class="btn"><?php echo $this->l('list_actions'); ?></button>
+							<button class="btn dropdown-toggle" data-toggle="dropdown">
+								<span class="caret"></span>
+							</button>
+							<ul class="dropdown-menu">
 								<?php
 								if(!$unset_edit){?>
-								
-										<a class="btn btn-primary" href="<?php echo $row->edit_url?>" title="<?php echo $this->l('list_edit')?> <?php echo $subject?>">
+									<li>
+										<a href="<?php echo $row->edit_url?>" title="<?php echo $this->l('list_edit')?> <?php echo $subject?>">
 											<i class="icon-pencil"></i>
 											<?php echo $this->l('list_edit') . ' ' . $subject; ?>
 										</a>
-								
+									</li>
 								<?php
 								}
 								if(!$unset_delete){?>
-									
-										<a href="<?php echo $row->delete_url?>" class="btn btn-danger" data-target-url="<?php echo $row->delete_url?>" title="<?php echo $this->l('list_delete')?> <?php echo $subject?>" class="delete-row" >
+									<li>
+										<a href="javascript:void(0);" data-target-url="<?php echo $row->delete_url?>" title="<?php echo $this->l('list_delete')?> <?php echo $subject?>" class="delete-row" >
 											<i class="icon-trash"></i>
 											<?php echo $this->l('list_delete') . ' ' . $subject; ?>
 										</a>
-								
+									</li>
 								<?php
 								}
 								if(!empty($row->action_urls)){
 									foreach($row->action_urls as $action_unique_id => $action_url){
 										$action = $actions[$action_unique_id];
 										?>
-									
+										<li>
 											<a href="<?php echo $action_url; ?>" class="<?php echo $action->css_class; ?> crud-action" title="<?php echo $action->label?>"><?php
 											if(!empty($action->image_url)){ ?>
 												<img src="<?php echo $action->image_url; ?>" alt="" />
@@ -64,12 +68,12 @@ if(!empty($list)){ ?>
 											echo ' '.$action->label;
 											?>
 											</a>
-										
+										</li>
 									<?php
 									}
 								}
 								?>
-								
+								</ul>
 							</div>
 							<div class="clear"></div>
 						</div>

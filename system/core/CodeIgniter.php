@@ -18,7 +18,7 @@
  *
  * @package		CodeIgniter
  * @author		EllisLab Dev Team
- * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (http://ellislab.com/)
+ * @copyright	Copyright (c) 2008 - 2013, EllisLab, Inc. (http://ellislab.com/)
  * @license		http://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * @link		http://codeigniter.com
  * @since		Version 1.0
@@ -48,73 +48,24 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 /*
  * ------------------------------------------------------
- *  Load the framework constants
- * ------------------------------------------------------
- */
-	if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/constants.php'))
-	{
-		require_once(APPPATH.'config/'.ENVIRONMENT.'/constants.php');
-	}
-
-	require_once(APPPATH.'config/constants.php');
-
-/*
- * ------------------------------------------------------
  *  Load the global functions
  * ------------------------------------------------------
  */
 	require_once(BASEPATH.'core/Common.php');
 
-
 /*
  * ------------------------------------------------------
- * Security procedures
+ *  Load the framework constants
  * ------------------------------------------------------
  */
-
-if ( ! is_php('5.4'))
-{
-	ini_set('magic_quotes_runtime', 0);
-
-	if ((bool) ini_get('register_globals'))
+	if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/constants.php'))
 	{
-		$_protected = array(
-			'_SERVER',
-			'_GET',
-			'_POST',
-			'_FILES',
-			'_REQUEST',
-			'_SESSION',
-			'_ENV',
-			'_COOKIE',
-			'GLOBALS',
-			'HTTP_RAW_POST_DATA',
-			'system_path',
-			'application_folder',
-			'view_folder',
-			'_protected',
-			'_registered'
-		);
-
-		$_registered = ini_get('variables_order');
-		foreach (array('E' => '_ENV', 'G' => '_GET', 'P' => '_POST', 'C' => '_COOKIE', 'S' => '_SERVER') as $key => $superglobal)
-		{
-			if (strpos($_registered, $key) === FALSE)
-			{
-				continue;
-			}
-
-			foreach (array_keys($$superglobal) as $var)
-			{
-				if (isset($GLOBALS[$var]) && ! in_array($var, $_protected, TRUE))
-				{
-					$GLOBALS[$var] = NULL;
-				}
-			}
-		}
+		require(APPPATH.'config/'.ENVIRONMENT.'/constants.php');
 	}
-}
-
+	else
+	{
+		require(APPPATH.'config/constants.php');
+	}
 
 /*
  * ------------------------------------------------------
@@ -123,6 +74,9 @@ if ( ! is_php('5.4'))
  */
 	set_error_handler('_exception_handler');
 	register_shutdown_function('_shutdown_handler');
+
+	// Kill magic quotes
+	is_php('5.4') OR @ini_set('magic_quotes_runtime', 0);
 
 /*
  * ------------------------------------------------------
@@ -172,11 +126,6 @@ if ( ! is_php('5.4'))
  * ------------------------------------------------------
  *  Instantiate the config class
  * ------------------------------------------------------
- *
- * Note: It is important that Config is loaded first as
- * most other classes depend on it either directly or by
- * depending on another class that uses it.
- *
  */
 	$CFG =& load_class('Config', 'core');
 
@@ -191,70 +140,14 @@ if ( ! is_php('5.4'))
 
 /*
  * ------------------------------------------------------
- * Important charset-related stuff
- * ------------------------------------------------------
- *
- * Configure mbstring and/or iconv if they are enabled
- * and set MB_ENABLED and ICONV_ENABLED constants, so
- * that we don't repeatedly do extension_loaded() or
- * function_exists() calls.
- *
- * Note: UTF-8 class depends on this. It used to be done
- * in it's constructor, but it's _not_ class-specific.
- *
- */
-	$charset = strtoupper(config_item('charset'));
-	ini_set('default_charset', $charset);
-
-	if (extension_loaded('mbstring'))
-	{
-		define('MB_ENABLED', TRUE);
-		// mbstring.internal_encoding is deprecated starting with PHP 5.6
-		// and it's usage triggers E_DEPRECATED messages.
-		@ini_set('mbstring.internal_encoding', $charset);
-		// This is required for mb_convert_encoding() to strip invalid characters.
-		// That's utilized by CI_Utf8, but it's also done for consistency with iconv.
-		mb_substitute_character('none');
-	}
-	else
-	{
-		define('MB_ENABLED', FALSE);
-	}
-
-	// There's an ICONV_IMPL constant, but the PHP manual says that using
-	// iconv's predefined constants is "strongly discouraged".
-	if (extension_loaded('iconv'))
-	{
-		define('ICONV_ENABLED', TRUE);
-		// iconv.internal_encoding is deprecated starting with PHP 5.6
-		// and it's usage triggers E_DEPRECATED messages.
-		@ini_set('iconv.internal_encoding', $charset);
-	}
-	else
-	{
-		define('ICONV_ENABLED', FALSE);
-	}
-
-	if (is_php('5.6'))
-	{
-		ini_set('php.internal_encoding', $charset);
-	}
-
-/*
- * ------------------------------------------------------
- *  Load compatibility features
- * ------------------------------------------------------
- */
-
-	require_once(BASEPATH.'core/compat/mbstring.php');
-	require_once(BASEPATH.'core/compat/hash.php');
-	require_once(BASEPATH.'core/compat/password.php');
-	require_once(BASEPATH.'core/compat/array.php');
-
-/*
- * ------------------------------------------------------
  *  Instantiate the UTF-8 class
  * ------------------------------------------------------
+ *
+ * Note: Order here is rather important as the UTF-8
+ * class needs to be used very early on, but it cannot
+ * properly determine if UTF-8 can be supported until
+ * after the Config class is instantiated.
+ *
  */
 	$UNI =& load_class('Utf8', 'core');
 
@@ -270,7 +163,13 @@ if ( ! is_php('5.4'))
  *  Instantiate the routing class and set the routing
  * ------------------------------------------------------
  */
-	$RTR =& load_class('Router', 'core', isset($routing) ? $routing : NULL);
+	$RTR =& load_class('Router', 'core');
+
+	// Set any routing overrides that may exist in the main index file
+	if (isset($routing))
+	{
+		$RTR->_set_overrides($routing);
+	}
 
 /*
  * ------------------------------------------------------
@@ -284,7 +183,8 @@ if ( ! is_php('5.4'))
  *	Is there a valid cache file? If so, we're done...
  * ------------------------------------------------------
  */
-	if ($EXT->call_hook('cache_override') === FALSE && $OUT->_display_cache($CFG, $URI) === TRUE)
+	if ($EXT->call_hook('cache_override') === FALSE
+		&& $OUT->_display_cache($CFG, $URI) === TRUE)
 	{
 		exit;
 	}
@@ -317,7 +217,7 @@ if ( ! is_php('5.4'))
  *
  */
 	// Load the base controller class
-	require_once BASEPATH.'core/Controller.php';
+	require BASEPATH.'core/Controller.php';
 
 	/**
 	 * Reference to the CI_Controller method.
@@ -333,117 +233,96 @@ if ( ! is_php('5.4'))
 
 	if (file_exists(APPPATH.'core/'.$CFG->config['subclass_prefix'].'Controller.php'))
 	{
-		require_once APPPATH.'core/'.$CFG->config['subclass_prefix'].'Controller.php';
+		require APPPATH.'core/'.$CFG->config['subclass_prefix'].'Controller.php';
 	}
+
+	// Load the local application controller
+	// Note: The Router class automatically validates the controller path using the router->_validate_request().
+	// If this include fails it means that the default controller in the Routes.php file is not resolving to something valid.
+	$class = ucfirst($RTR->class);
+	if ( ! file_exists(APPPATH.'controllers/'.$RTR->directory.$class.'.php'))
+	{
+		show_error('Unable to load your default controller. Please make sure the controller specified in your Routes.php file is valid.');
+	}
+
+	include(APPPATH.'controllers/'.$RTR->directory.$class.'.php');
 
 	// Set a mark point for benchmarking
 	$BM->mark('loading_time:_base_classes_end');
 
 /*
  * ------------------------------------------------------
- *  Sanity checks
+ *  Security check
  * ------------------------------------------------------
  *
- *  The Router class has already validated the request,
- *  leaving us with 3 options here:
- *
- *	1) an empty class name, if we reached the default
- *	   controller, but it didn't exist;
- *	2) a query string which doesn't go through a
- *	   file_exists() check
- *	3) a regular request for a non-existing page
- *
- *  We handle all of these as a 404 error.
- *
- *  Furthermore, none of the methods in the app controller
- *  or the loader class can be called via the URI, nor can
+ *  None of the methods in the app controller or the
+ *  loader class can be called via the URI, nor can
  *  controller methods that begin with an underscore.
  */
+	$method	= $RTR->method;
 
-	$e404 = FALSE;
-	$class = ucfirst($RTR->class);
-	$method = $RTR->method;
-
-	if (empty($class) OR ! file_exists(APPPATH.'controllers/'.$RTR->directory.$class.'.php'))
+	if ( ! class_exists($class, FALSE) OR $method[0] === '_' OR method_exists('CI_Controller', $method))
 	{
-		$e404 = TRUE;
+		if ( ! empty($RTR->routes['404_override']))
+		{
+			if (sscanf($RTR->routes['404_override'], '%[^/]/%s', $class, $method) !== 2)
+			{
+				$method = 'index';
+			}
+
+			$class = ucfirst($class);
+
+			if ( ! class_exists($class, FALSE))
+			{
+				if ( ! file_exists(APPPATH.'controllers/'.$class.'.php'))
+				{
+					show_404($class.'/'.$method);
+				}
+
+				include_once(APPPATH.'controllers/'.$class.'.php');
+			}
+		}
+		else
+		{
+			show_404($class.'/'.$method);
+		}
+	}
+
+	if (method_exists($class, '_remap'))
+	{
+		$params = array($method, array_slice($URI->rsegments, 2));
+		$method = '_remap';
 	}
 	else
 	{
-		require_once(APPPATH.'controllers/'.$RTR->directory.$class.'.php');
-
-		if ( ! class_exists($class, FALSE) OR $method[0] === '_' OR method_exists('CI_Controller', $method))
-		{
-			$e404 = TRUE;
-		}
-		elseif (method_exists($class, '_remap'))
-		{
-			$params = array($method, array_slice($URI->rsegments, 2));
-			$method = '_remap';
-		}
 		// WARNING: It appears that there are issues with is_callable() even in PHP 5.2!
 		// Furthermore, there are bug reports and feature/change requests related to it
 		// that make it unreliable to use in this context. Please, DO NOT change this
 		// work-around until a better alternative is available.
-		elseif ( ! in_array(strtolower($method), array_map('strtolower', get_class_methods($class)), TRUE))
+		if ( ! in_array(strtolower($method), array_map('strtolower', get_class_methods($class)), TRUE))
 		{
-			$e404 = TRUE;
-		}
-	}
-
-	if ($e404)
-	{
-		if ( ! empty($RTR->routes['404_override']))
-		{
-			if (sscanf($RTR->routes['404_override'], '%[^/]/%s', $error_class, $error_method) !== 2)
+			if (empty($RTR->routes['404_override']))
 			{
-				$error_method = 'index';
+				show_404($class.'/'.$method);
+			}
+			elseif (sscanf($RTR->routes['404_override'], '%[^/]/%s', $class, $method) !== 2)
+			{
+				$method = 'index';
 			}
 
-			$error_class = ucfirst($error_class);
+			$class = ucfirst($class);
 
-			if ( ! class_exists($error_class, FALSE))
+			if ( ! class_exists($class, FALSE))
 			{
-				if (file_exists(APPPATH.'controllers/'.$RTR->directory.$error_class.'.php'))
+				if ( ! file_exists(APPPATH.'controllers/'.$class.'.php'))
 				{
-					require_once(APPPATH.'controllers/'.$RTR->directory.$error_class.'.php');
-					$e404 = ! class_exists($error_class, FALSE);
+					show_404($class.'/'.$method);
 				}
-				// Were we in a directory? If so, check for a global override
-				elseif ( ! empty($RTR->directory) && file_exists(APPPATH.'controllers/'.$error_class.'.php'))
-				{
-					require_once(APPPATH.'controllers/'.$error_class.'.php');
-					if (($e404 = ! class_exists($error_class, FALSE)) === FALSE)
-					{
-						$RTR->directory = '';
-					}
-				}
-			}
-			else
-			{
-				$e404 = FALSE;
+
+				include_once(APPPATH.'controllers/'.$class.'.php');
 			}
 		}
 
-		// Did we reset the $e404 flag? If so, set the rsegments, starting from index 1
-		if ( ! $e404)
-		{
-			$class = $error_class;
-			$method = $error_method;
-
-			$URI->rsegments = array(
-				1 => $class,
-				2 => $method
-			);
-		}
-		else
-		{
-			show_404($RTR->directory.$class.'/'.$method);
-		}
-	}
-
-	if ($method !== '_remap')
-	{
 		$params = array_slice($URI->rsegments, 2);
 	}
 

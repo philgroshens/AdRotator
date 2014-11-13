@@ -3,17 +3,24 @@
 class Mock_Core_Utf8 extends CI_Utf8 {
 
 	/**
-	 * We need to define UTF8_ENABLED the same way that
-	 * CI_Utf8 constructor does.
+	 * We need to define several constants as
+	 * the same process within CI_Utf8 class constructor.
+	 *
+	 * @covers CI_Utf8::__construct()
 	 */
 	public function __construct()
 	{
-		if (defined('UTF8_ENABLED'))
-		{
-			return;
-		}
+		defined('UTF8_ENABLED') OR define('UTF8_ENABLED', TRUE);
 
-		parent::__construct();
+		if (extension_loaded('mbstring'))
+		{
+			defined('MB_ENABLED') OR define('MB_ENABLED', TRUE);
+			mb_internal_encoding('UTF-8');
+		}
+		else
+		{
+			defined('MB_ENABLED') OR define('MB_ENABLED', FALSE);
+		}
 	}
 
 }

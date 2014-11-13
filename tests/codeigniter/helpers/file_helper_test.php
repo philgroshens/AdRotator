@@ -31,10 +31,9 @@ class File_helper_Test extends CI_TestCase {
 	{
 		$content = 'Jack and Jill went up the mountain to fight a billy goat.';
 
-		$file = vfsStream::newFile('my_file.txt', 0777)
-			->withContent($content)
-			->lastModified(time() - 86400)
-			->at($this->_test_dir);
+		$file = vfsStream::newFile('my_file.txt', 0777)->withContent($content)
+											 ->lastModified(time() - 86400)
+											 ->at($this->_test_dir);
 
 		$this->assertEquals('777', octal_permissions($file->getPermissions()));
 	}
@@ -48,10 +47,9 @@ class File_helper_Test extends CI_TestCase {
 	{
 		$content = 'Jack and Jill went up the mountain to fight a billy goat.';
 
-		$file = vfsStream::newFile('my_file.txt', 0777)
-			->withContent($content)
-			->lastModified(time() - 86400)
-			->at($this->_test_dir);
+		$file = vfsStream::newFile('my_file.txt', 0777)->withContent($content)
+											 ->lastModified(time() - 86400)
+											 ->at($this->_test_dir);
 
 		$this->assertEquals('urwxrwxrwx', symbolic_permissions($file->getPermissions()));
 	}
@@ -62,10 +60,9 @@ class File_helper_Test extends CI_TestCase {
 	{
 		$content = 'Jack and Jill went up the mountain to fight a billy goat.';
 
-		$file = vfsStream::newFile('my_file.txt', 0777)
-			->withContent($content)
-			->lastModified(time() - 86400)
-			->at($this->_test_dir);
+		$file = vfsStream::newFile('my_file.txt', 0777)->withContent($content)
+											 ->lastModified(time() - 86400)
+											 ->at($this->_test_dir);
 
 		$this->assertEquals('text/plain', get_mime_by_extension(vfsStream::url('my_file.txt')));
 
@@ -106,20 +103,19 @@ class File_helper_Test extends CI_TestCase {
 		$content = 'Jack and Jill went up the mountain to fight a billy goat.';
 		$last_modified = time() - 86400;
 
-		$file = vfsStream::newFile('my_file.txt', 0777)
-			->withContent($content)
-			->lastModified($last_modified)
-			->at($this->_test_dir);
+		$file = vfsStream::newFile('my_file.txt', 0777)->withContent($content)
+											 ->lastModified($last_modified)
+											 ->at($this->_test_dir);
 
 		$ret_values = array(
-			'name'        => 'my_file.txt',
-			'server_path' => 'vfs://my_file.txt',
-			'size'        => 57,
-			'date'        => $last_modified,
-			'readable'    => TRUE,
-			'writable'    => TRUE,
-			'executable'  => TRUE,
-			'fileperms'   => 33279
+			'name'			=> 'my_file.txt',
+			'server_path'	=> 'vfs://my_file.txt',
+			'size'			=> 57,
+			'date'			=> $last_modified,
+			'readable'		=> TRUE,
+			'writable'		=> TRUE,
+			'executable'	=> TRUE,
+			'fileperms'		=> 33279
 		);
 
 		$info = get_file_info(vfsStream::url('my_file.txt'), $vals);
@@ -132,16 +128,24 @@ class File_helper_Test extends CI_TestCase {
 
 	// --------------------------------------------------------------------
 
-	 public function test_write_file()
-	 {
-		$content = 'Jack and Jill went up the mountain to fight a billy goat.';
+	// Skipping for now, as it's not implemented in vfsStreamWrapper
+	// flock(): vfsStreamWrapper::stream_lock is not implemented!
 
-		$file = vfsStream::newFile('write.txt', 0777)
-			->withContent('')
-			->lastModified(time() - 86400)
-			->at($this->_test_dir);
-
-		$this->assertTrue(write_file(vfsStream::url('write.txt'), $content));
-	 }
+	// public function test_write_file()
+	// {
+	//	if ( ! defined('FOPEN_WRITE_CREATE_DESTRUCTIVE'))
+	//	{
+	//		define('FOPEN_WRITE_CREATE_DESTRUCTIVE', 'wb');
+	//	}
+	//
+	//	$content = 'Jack and Jill went up the mountain to fight a billy goat.';
+	//
+	//	$file = vfsStream::newFile('write.txt', 0777)->withContent('')
+	//								 	 ->lastModified(time() - 86400)
+	//								 	 ->at($this->_test_dir);
+	//
+	//	$this->assertTrue(write_file(vfsStream::url('write.txt'), $content));
+	//
+	// }
 
 }

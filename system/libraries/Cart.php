@@ -18,7 +18,7 @@
  *
  * @package		CodeIgniter
  * @author		EllisLab Dev Team
- * @copyright	Copyright (c) 2006 - 2014, EllisLab, Inc. (http://ellislab.com/)
+ * @copyright	Copyright (c) 2006 - 2013, EllisLab, Inc. (http://ellislab.com/)
  * @license		http://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * @link		http://codeigniter.com
  * @since		Version 1.0
@@ -60,6 +60,8 @@ class CI_Cart {
 	 */
 	public $product_name_safe	= TRUE;
 
+	// --------------------------------------------------------------------------
+	// Protected variables. Do not change!
 	// --------------------------------------------------------------------------
 
 	/**
@@ -282,10 +284,10 @@ class CI_Cart {
 
 		// You can either update a single product using a one-dimensional array,
 		// or multiple products using a multi-dimensional one.  The way we
-		// determine the array type is by looking for a required array key named "rowid".
+		// determine the array type is by looking for a required array key named "id".
 		// If it's not found we assume it's a multi-dimensional array
 		$save_cart = FALSE;
-		if (isset($items['rowid']))
+		if (isset($items['rowid'], $items['qty']))
 		{
 			if ($this->_update($items) === TRUE)
 			{
@@ -296,7 +298,7 @@ class CI_Cart {
 		{
 			foreach ($items as $val)
 			{
-				if (is_array($val) && isset($val['rowid']))
+				if (is_array($val) && isset($val['rowid'], $val['qty']))
 				{
 					if ($this->_update($val) === TRUE)
 					{
@@ -321,10 +323,10 @@ class CI_Cart {
 	/**
 	 * Update the cart
 	 *
-	 * This function permits changing item properties.
+	 * This function permits the quantity of a given item to be changed.
 	 * Typically it is called from the "view cart" page if a user makes
 	 * changes to the quantity before checkout. That array must contain the
-	 * rowid and quantity for each item.
+	 * product ID and quantity for each item.
 	 *
 	 * @param	array
 	 * @return	bool
@@ -332,36 +334,23 @@ class CI_Cart {
 	protected function _update($items = array())
 	{
 		// Without these array indexes there is nothing we can do
-		if ( ! isset($items['rowid'], $this->_cart_contents[$items['rowid']]))
+		if ( ! isset($items['qty'], $items['rowid'], $this->_cart_contents[$items['rowid']]))
 		{
 			return FALSE;
 		}
 
 		// Prep the quantity
-		if (isset($items['qty']))
-		{
-			$items['qty'] = (float) $items['qty'];
-			// Is the quantity zero?  If so we will remove the item from the cart.
-			// If the quantity is greater than zero we are updating
-			if ($items['qty'] == 0)
-			{
-				unset($this->_cart_contents[$items['rowid']]);
-				return TRUE;
-			}
-		}
+		$items['qty'] = (float) $items['qty'];
 
-		// find updatable keys
-		$keys = array_intersect(array_keys($this->_cart_contents[$items['rowid']]), array_keys($items));
-		// if a price was passed, make sure it contains valid data
-		if (isset($items['price']))
+		// Is the quantity zero?  If so we will remove the item from the cart.
+		// If the quantity is greater than zero we are updating
+		if ($items['qty'] == 0)
 		{
-			$items['price'] = (float) $items['price'];
+			unset($this->_cart_contents[$items['rowid']]);
 		}
-
-		// product id & name shouldn't be changed
-		foreach (array_diff($keys, array('id', 'name')) as $key)
+		else
 		{
-			$this->_cart_contents[$items['rowid']][$key] = $items[$key];
+			$this->_cart_contents[$items['rowid']]['qty'] = $items['qty'];
 		}
 
 		return TRUE;

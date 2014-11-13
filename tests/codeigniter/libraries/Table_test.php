@@ -34,7 +34,7 @@ class Table_test extends CI_TestCase {
 	}
 
 	/*
-	 * @depends	test_prep_args
+	 * @depends testPrepArgs
 	 */
 	public function test_set_heading()
 	{
@@ -55,7 +55,7 @@ class Table_test extends CI_TestCase {
 	}
 
 	/*
-	 * @depends	test_prep_args
+	 * @depends testPrepArgs
 	 */
 	public function test_add_row()
 	{
@@ -200,14 +200,16 @@ class Table_test extends CI_TestCase {
 
 	public function test_set_from_array()
 	{
+		$this->assertFalse($this->table->set_from_array('bogus'));
+		$this->assertFalse($this->table->set_from_array(NULL));
+
 		$data = array(
 			array('name', 'color', 'number'),
 			array('Laura', 'Red', '22'),
 			array('Katie', 'Blue')
 		);
 
-		$this->table->auto_heading = FALSE;
-		$this->table->set_from_array($data);
+		$this->table->set_from_array($data, FALSE);
 		$this->assertEmpty($this->table->heading);
 
 		$this->table->clear();
@@ -233,14 +235,22 @@ class Table_test extends CI_TestCase {
 
 	public function test_set_from_object()
 	{
-		// This needs to be passed by reference to CI_DB_result::__construct()
-		$dummy = new stdClass();
-		$dummy->conn_id = NULL;
-		$dummy->result_id = NULL;
+		// Make a stub of query instance
+		$query = new CI_TestCase();
+		$query->list_fields = function(){
+			return array('name', 'email');
+		};
+		$query->result_array = function(){
+			return array(
+					array('name' => 'John Doe', 'email' => 'john@doe.com'),
+					array('name' => 'Foo Bar', 'email' => 'foo@bar.com'),
+				);
+		};
+		$query->num_rows = function(){
+			return 2;
+		};
 
-		$db_result = new DB_result_dummy($dummy);
-
-		$this->table->set_from_db_result($db_result);
+		$this->table->set_from_object($query);
 
 		$expected = array(
 			array('data' => 'name'),
@@ -280,21 +290,4 @@ class Table_test extends CI_TestCase {
 		$this->assertTrue(strpos($table, '<td>Small</td>') !== FALSE);
 	}
 
-}
-
-// We need this for the _set_from_db_result() test
-class DB_result_dummy extends CI_DB_result
-{
-	public function list_fields()
-	{
-		return array('name', 'email');
-	}
-
-	public function result_array()
-	{
-		return array(
-			array('name' => 'John Doe', 'email' => 'john@doe.com'),
-			array('name' => 'Foo Bar', 'email' => 'foo@bar.com')
-		);
-	}
 }

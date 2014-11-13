@@ -4,7 +4,7 @@ class Parser_test extends CI_TestCase {
 
 	public function set_up()
 	{
-		$this->parser = new CI_Parser();
+		$this->parser = new Mock_Libraries_Parser();
 		$this->ci_instance_var('parser', $this->parser);
 	}
 
@@ -33,7 +33,7 @@ class Parser_test extends CI_TestCase {
 
 	// --------------------------------------------------------------------
 
-	public function test_parse_string()
+	public function test_parse_simple_string()
 	{
 		$data = array(
 			'title' => 'Page Title',
@@ -69,12 +69,16 @@ class Parser_test extends CI_TestCase {
 	{
 		$data = array(
 			'title'		=> 'Super Heroes',
-			'powers'	=> array(array('invisibility' => 'yes', 'flying' => 'no'))
+			'powers'	=> array(
+					array(
+						'invisibility'	=> 'yes',
+						'flying'		=> 'no'),
+			)
 		);
 
-		$template = "{title}\n{powers}{invisibility}\n{flying}{/powers}\nsecond:{powers} {invisibility} {flying}{/powers}";
+		$template = "{title}\n{powers}{invisibility}\n{flying}{/powers}";
 
-		$this->assertEquals("Super Heroes\nyes\nno\nsecond: yes no", $this->parser->parse_string($template, $data, TRUE));
+		$this->assertEquals("Super Heroes\nyes\nno", $this->parser->parse_string($template, $data, TRUE));
 	}
 
 	// --------------------------------------------------------------------
@@ -83,7 +87,11 @@ class Parser_test extends CI_TestCase {
 	{
 		$data = array(
 			'title'		=> 'Super Heroes',
-			'powers'	=> array(array('invisibility' => 'yes', 'flying' => 'no'))
+			'powers'	=> array(
+					array(
+						'invisibility'	=> 'yes',
+						'flying'		=> 'no'),
+			)
 		);
 
 		$template = "{title}\n{powers}{invisibility}\n{flying}";

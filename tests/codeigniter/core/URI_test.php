@@ -26,10 +26,6 @@ class URI_test extends CI_TestCase {
 
 	// --------------------------------------------------------------------
 
-	/*
-
-		This has been moved to the constructor
-
 	public function test_fetch_uri_string()
 	{
 		define('SELF', 'index.php');
@@ -90,13 +86,8 @@ class URI_test extends CI_TestCase {
 		// uri_protocol: REQUEST_URI
 		// uri_protocol: CLI
 	}
-	*/
 
 	// --------------------------------------------------------------------
-
-	/*
-
-		This has been moved into _set_uri_string()
 
 	public function test_explode_segments()
 	{
@@ -116,15 +107,16 @@ class URI_test extends CI_TestCase {
 			$this->assertEquals($a, $this->uri->segments);
 		}
 	}
-	*/
+
 	// --------------------------------------------------------------------
 
 	public function test_filter_uri()
 	{
-		$this->uri->_set_permitted_uri_chars('a-z 0-9~%.:_\-');
+		$this->uri->config->set_item('enable_query_strings', FALSE);
+		$this->uri->config->set_item('permitted_uri_chars', 'a-z 0-9~%.:_\-');
 
 		$str_in = 'abc01239~%.:_-';
-		$str = $this->uri->filter_uri($str_in);
+		$str = $this->uri->_filter_uri($str_in);
 
 		$this->assertEquals($str, $str_in);
 	}
@@ -134,9 +126,11 @@ class URI_test extends CI_TestCase {
 	public function test_filter_uri_escaping()
 	{
 		// ensure escaping even if dodgey characters are permitted
-		$this->uri->_set_permitted_uri_chars('a-z 0-9~%.:_\-()$');
 
-		$str = $this->uri->filter_uri('$destroy_app(foo)');
+		$this->uri->config->set_item('enable_query_strings', FALSE);
+		$this->uri->config->set_item('permitted_uri_chars', 'a-z 0-9~%.:_\-()$');
+
+		$str = $this->uri->_filter_uri('$destroy_app(foo)');
 
 		$this->assertEquals($str, '&#36;destroy_app&#40;foo&#41;');
 	}
@@ -148,8 +142,25 @@ class URI_test extends CI_TestCase {
 		$this->setExpectedException('RuntimeException');
 
 		$this->uri->config->set_item('enable_query_strings', FALSE);
-		$this->uri->_set_permitted_uri_chars('a-z 0-9~%.:_\-');
-		$this->uri->filter_uri('$this()');
+		$this->uri->config->set_item('permitted_uri_chars', 'a-z 0-9~%.:_\-');
+		$this->uri->_filter_uri('$this()');
+	}
+
+	// --------------------------------------------------------------------
+
+	public function test_remove_url_suffix()
+	{
+		$this->uri->config->set_item('url_suffix', '.html');
+
+		$this->uri->uri_string = 'controller/method/index.html';
+		$this->uri->_remove_url_suffix();
+
+		$this->assertEquals($this->uri->uri_string, 'controller/method/index');
+
+		$this->uri->uri_string = 'controller/method/index.htmlify.html';
+		$this->uri->_remove_url_suffix();
+
+		$this->assertEquals($this->uri->uri_string, 'controller/method/index.htmlify');
 	}
 
 	// --------------------------------------------------------------------

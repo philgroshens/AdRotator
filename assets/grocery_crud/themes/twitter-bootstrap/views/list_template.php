@@ -51,9 +51,7 @@
 
 <!-- UTILIZADO PARA IMPRESSÃO DA LISTAGEM -->
 <div id="hidden-operations"></div>
-<div class="page-header">
-<h1><?php echo $subject?></h1>
-</div>
+
 <div class="twitter-bootstrap">
 	<div id="main-table-box">
 		<br/>
@@ -61,22 +59,31 @@
 			<?php
 			if(!$unset_add || !$unset_export || !$unset_print){?>
 				<?php if(!$unset_add){?>
-					<a href="<?php echo $add_url?>" title="<?php echo $this->l('list_add'); ?> <?php echo $subject?>" class="add-anchor btn btn-success">
+					<a href="<?php echo $add_url?>" title="<?php echo $this->l('list_add'); ?> <?php echo $subject?>" class="add-anchor btn">
 						<i class="icon-plus"></i>
 						<?php echo $this->l('list_add'); ?> <?php echo $subject?>
 					</a>
 	 			<?php
 	 			}
 	 			if(!$unset_export) { ?>
-		 			<a class="export-anchor btn btn-default" data-url="<?php echo $export_url; ?>" rel="external">
+		 			<a class="export-anchor btn" data-url="<?php echo $export_url; ?>" rel="external">
 		 				<i class="icon-download"></i>
 		 				<?php echo $this->l('list_export');?>
 		 			</a>
 	 			<?php
 	 			}
-	 			
+	 			if(!$unset_print) { ?>
+		 			<a class="print-anchor btn" data-url="<?php echo $print_url; ?>">
+		 				<i class="icon-print"></i>
+		 				<?php echo $this->l('list_print');?>
+		 			</a>
+	 			<?php
+	 			}
 	 		} ?>
- 	
+ 			<a class="btn" data-toggle="modal" href="#filtering-form-search" >
+ 				<i class="icon-search"></i>
+ 				<?php echo $this->l('list_search');?>
+ 			</a>
  		</div>
 		<br/>
 

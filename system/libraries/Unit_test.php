@@ -18,7 +18,7 @@
  *
  * @package		CodeIgniter
  * @author		EllisLab Dev Team
- * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (http://ellislab.com/)
+ * @copyright	Copyright (c) 2008 - 2013, EllisLab, Inc. (http://ellislab.com/)
  * @license		http://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * @link		http://codeigniter.com
  * @since		Version 1.3.1
@@ -81,15 +81,7 @@ class CI_Unit_test {
 	 *
 	 * @var	array
 	 */
-	protected $_test_items_visible	= array(
-			'test_name',
-			'test_datatype',
-			'res_datatype',
-			'result',
-			'file',
-			'line',
-			'notes'
-	);
+	protected $_test_items_visible	= array();
 
 	// --------------------------------------------------------------------
 
@@ -100,6 +92,17 @@ class CI_Unit_test {
 	 */
 	public function __construct()
 	{
+		// These are the default items visible when a test is run.
+		$this->_test_items_visible = array (
+							'test_name',
+							'test_datatype',
+							'res_datatype',
+							'result',
+							'file',
+							'line',
+							'notes'
+						);
+
 		log_message('debug', 'Unit Testing Class Initialized');
 	}
 
@@ -110,10 +113,10 @@ class CI_Unit_test {
 	 *
 	 * Runs the supplied tests
 	 *
-	 * @param	array	$items
+	 * @param	array
 	 * @return	void
 	 */
-	public function set_test_items($items)
+	public function set_test_items($items = array())
 	{
 		if ( ! empty($items) && is_array($items))
 		{
@@ -227,7 +230,7 @@ class CI_Unit_test {
 	 *
 	 * Causes the evaluation to use === rather than ==
 	 *
-	 * @param	bool	$state
+	 * @param	bool
 	 * @return	void
 	 */
 	public function use_strict($state = TRUE)
@@ -285,7 +288,6 @@ class CI_Unit_test {
 				{
 					$val = $line;
 				}
-
 				$temp[$CI->lang->line('ut_'.$key, FALSE)] = $val;
 			}
 

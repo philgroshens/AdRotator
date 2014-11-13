@@ -18,7 +18,7 @@
  *
  * @package		CodeIgniter
  * @author		EllisLab Dev Team
- * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (http://ellislab.com/)
+ * @copyright	Copyright (c) 2008 - 2013, EllisLab, Inc. (http://ellislab.com/)
  * @license		http://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * @link		http://codeigniter.com
  * @since		Version 1.0
@@ -79,19 +79,11 @@ if ( ! function_exists('write_file'))
 		}
 
 		flock($fp, LOCK_EX);
-
-		for ($written = 0, $length = strlen($data); $written < $length; $written += $result)
-		{
-			if (($result = fwrite($fp, substr($data, $written))) === FALSE)
-			{
-				break;
-			}
-		}
-
+		fwrite($fp, $data);
 		flock($fp, LOCK_UN);
 		fclose($fp);
 
-		return is_int($result);
+		return TRUE;
 	}
 }
 
@@ -137,12 +129,14 @@ if ( ! function_exists('delete_files'))
 				}
 			}
 		}
+		@closedir($current_dir);
 
-		closedir($current_dir);
+		if ($del_dir === TRUE && $_level > 0)
+		{
+			return @rmdir($path);
+		}
 
-		return ($del_dir === TRUE && $_level > 0)
-			? @rmdir($path)
-			: TRUE;
+		return TRUE;
 	}
 }
 
@@ -176,7 +170,7 @@ if ( ! function_exists('get_filenames'))
 
 			while (FALSE !== ($file = readdir($fp)))
 			{
-				if (is_dir($source_dir.$file) && $file[0] !== '.')
+				if (@is_dir($source_dir.$file) && $file[0] !== '.')
 				{
 					get_filenames($source_dir.$file.DIRECTORY_SEPARATOR, $include_path, TRUE);
 				}
@@ -185,8 +179,8 @@ if ( ! function_exists('get_filenames'))
 					$_filedata[] = ($include_path === TRUE) ? $source_dir.$file : $file;
 				}
 			}
-
 			closedir($fp);
+
 			return $_filedata;
 		}
 
@@ -228,7 +222,7 @@ if ( ! function_exists('get_dir_file_info'))
 			// foreach (scandir($source_dir, 1) as $file) // In addition to being PHP5+, scandir() is simply not as fast
 			while (FALSE !== ($file = readdir($fp)))
 			{
-				if (is_dir($source_dir.$file) && $file[0] !== '.' && $top_level_only === FALSE)
+				if (@is_dir($source_dir.$file) && $file[0] !== '.' && $top_level_only === FALSE)
 				{
 					get_dir_file_info($source_dir.$file.DIRECTORY_SEPARATOR, $top_level_only, TRUE);
 				}
@@ -238,8 +232,8 @@ if ( ! function_exists('get_dir_file_info'))
 					$_filedata[$file]['relative_path'] = $relative_path;
 				}
 			}
-
 			closedir($fp);
+
 			return $_filedata;
 		}
 
@@ -265,6 +259,7 @@ if ( ! function_exists('get_file_info'))
 	 */
 	function get_file_info($file, $returned_values = array('name', 'server_path', 'size', 'date'))
 	{
+
 		if ( ! file_exists($file))
 		{
 			return FALSE;
@@ -295,7 +290,8 @@ if ( ! function_exists('get_file_info'))
 					$fileinfo['readable'] = is_readable($file);
 					break;
 				case 'writable':
-					$fileinfo['writable'] = is_really_writable($file);
+					// There are known problems using is_weritable on IIS.  It may not be reliable - consider fileperms()
+					$fileinfo['writable'] = is_writable($file);
 					break;
 				case 'executable':
 					$fileinfo['executable'] = is_executable($file);
@@ -328,6 +324,8 @@ if ( ! function_exists('get_mime_by_extension'))
 	 */
 	function get_mime_by_extension($filename)
 	{
+		$extension = strtolower(substr(strrchr($filename, '.'), 1));
+
 		static $mimes;
 
 		if ( ! is_array($mimes))
@@ -339,8 +337,6 @@ if ( ! function_exists('get_mime_by_extension'))
 				return FALSE;
 			}
 		}
-
-		$extension = strtolower(substr(strrchr($filename, '.'), 1));
 
 		if (isset($mimes[$extension]))
 		{
@@ -403,18 +399,18 @@ if ( ! function_exists('symbolic_permissions'))
 
 		// Owner
 		$symbolic .= (($perms & 0x0100) ? 'r' : '-')
-			.(($perms & 0x0080) ? 'w' : '-')
-			.(($perms & 0x0040) ? (($perms & 0x0800) ? 's' : 'x' ) : (($perms & 0x0800) ? 'S' : '-'));
+			. (($perms & 0x0080) ? 'w' : '-')
+			. (($perms & 0x0040) ? (($perms & 0x0800) ? 's' : 'x' ) : (($perms & 0x0800) ? 'S' : '-'));
 
 		// Group
 		$symbolic .= (($perms & 0x0020) ? 'r' : '-')
-			.(($perms & 0x0010) ? 'w' : '-')
-			.(($perms & 0x0008) ? (($perms & 0x0400) ? 's' : 'x' ) : (($perms & 0x0400) ? 'S' : '-'));
+			. (($perms & 0x0010) ? 'w' : '-')
+			. (($perms & 0x0008) ? (($perms & 0x0400) ? 's' : 'x' ) : (($perms & 0x0400) ? 'S' : '-'));
 
 		// World
 		$symbolic .= (($perms & 0x0004) ? 'r' : '-')
-			.(($perms & 0x0002) ? 'w' : '-')
-			.(($perms & 0x0001) ? (($perms & 0x0200) ? 't' : 'x' ) : (($perms & 0x0200) ? 'T' : '-'));
+			. (($perms & 0x0002) ? 'w' : '-')
+			. (($perms & 0x0001) ? (($perms & 0x0200) ? 't' : 'x' ) : (($perms & 0x0200) ? 'T' : '-'));
 
 		return $symbolic;
 	}

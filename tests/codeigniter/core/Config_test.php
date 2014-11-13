@@ -24,18 +24,18 @@ class Config_test extends CI_TestCase {
 		$this->assertEquals($this->cfg['base_url'], $this->config->item('base_url'));
 
 		// Bad Config value
-		$this->assertNull($this->config->item('no_good_item'));
+		$this->assertFalse($this->config->item('no_good_item'));
 
 		// Index
-		$this->assertNull($this->config->item('no_good_item', 'bad_index'));
-		$this->assertNull($this->config->item('no_good_item', 'default'));
+		$this->assertFalse($this->config->item('no_good_item', 'bad_index'));
+		$this->assertFalse($this->config->item('no_good_item', 'default'));
 	}
 
 	// --------------------------------------------------------------------
 
 	public function test_set_item()
 	{
-		$this->assertNull($this->config->item('not_yet_set'));
+		$this->assertFalse($this->config->item('not_yet_set'));
 
 		$this->config->set_item('not_yet_set', 'is set');
 		$this->assertEquals('is set', $this->config->item('not_yet_set'));
@@ -46,7 +46,7 @@ class Config_test extends CI_TestCase {
 	public function test_slash_item()
 	{
 		// Bad Config value
-		$this->assertNull($this->config->slash_item('no_good_item'));
+		$this->assertFalse($this->config->slash_item('no_good_item'));
 
 		$this->assertEquals($this->cfg['base_url'], $this->config->slash_item('base_url'));
 		$this->assertEquals($this->cfg['subclass_prefix'].'/', $this->config->slash_item('subclass_prefix'));
@@ -81,7 +81,7 @@ class Config_test extends CI_TestCase {
 
 		// Setup server vars for detection
 		$host = 'test.com';
-		$path = '/';
+		$path = '/path/';
 		$script = 'base_test.php';
 		$_SERVER['HTTP_HOST'] = $host;
 		$_SERVER['SCRIPT_NAME'] = $path.$script;
@@ -89,15 +89,7 @@ class Config_test extends CI_TestCase {
 		// Rerun constructor
 		$this->config = new $cls;
 
-		// Test plain detected (root)
-		$this->assertEquals('http://'.$host.$path, $this->config->base_url());
-
-		// Rerun constructor
-		$path = '/path/';
-		$_SERVER['SCRIPT_NAME'] = $path.$script;
-		$this->config = new $cls;
-
-		// Test plain detected (subfolder)
+		// Test plain detected
 		$this->assertEquals('http://'.$host.$path, $this->config->base_url());
 
 		// Rerun constructor
@@ -188,7 +180,7 @@ class Config_test extends CI_TestCase {
 		$cfg = array(
 			'one' => 'prime',
 			'two' => 2,
-			'three' => TRUE
+			'three' => true
 		);
 		$this->ci_vfs_create($file.'.php', '<?php $config = '.var_export($cfg, TRUE).';', $this->ci_app_root, 'config');
 		$this->assertTrue($this->config->load($file, TRUE));

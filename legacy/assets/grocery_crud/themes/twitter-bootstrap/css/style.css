@@ -1,0 +1,30 @@
+@import 'tablesorter.css';
+@import '../../../css/jquery_plugins/fancybox/jquery.fancybox.css';
+@import '../../../css/ui/simple/jquery-ui-1.10.1.custom.min.css';
+#options-content{
+	margin-bottom: 20px;
+}
+/*.row { 
+	margin-top: 70px;
+}*/
+.loading{
+	background:url('images/loading.gif') left top no-repeat;
+	padding-left: 30px;
+}
+ .footer {
+position: relative;
+bottom: 0;
+width: 100%;
+height: 60px;
+background-color: #f5f5f5;
+} 
+
+ .page-header { margin: 20px 0 20px; }
+.navbar-default .navbar-brand { color: #25aae1; }
+.navbar-default .navbar-brand:hover, .navbar-default .navbar-brand:focus { color: #f9f9f9; }
+.navbar-default { background-color: #2e2e2e; }
+.navbar-default .navbar-nav>li>a { color: #cccccc; }
+.navbar-default .navbar-nav>li>a:hover, .navbar-default .navbar-nav>li>a:focus { color: #ffffff; }
+.btn-success:hover, .btn-success:focus, .btn-success:active, .btn-success.active, .open .dropdown-toggle.btn-success { background-color: #1B7AA1; border-color: #25aae1;  } 
+.btn-success { background-color: #25aae1; border-color: #1B7AA1; }
+ .text-muted { margin: 20px 0; text-align: center; }
