@@ -208,7 +208,7 @@ color: #25aae1;}
  </head>
 
  <body>
-   <h1>SD-TRACK</h1>
+   <h1>adCloud</h1>
 <?php echo validation_errors(); ?>
 
 <form id="form" name="form" action="/login/validate" method="post">
