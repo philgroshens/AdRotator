@@ -54,7 +54,7 @@ line-height: 30px !important; }
 .chzn-container-single .chzn-single abbr { display: none; }
 #field_weight_chzn .chzn-drop { width: 50px !important; }
 .navbar-default .navbar-brand {
-color: #777;
+
 font-weight: 800;
 font-size: 23px;
 line-height: 18px;
