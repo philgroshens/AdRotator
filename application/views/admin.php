@@ -87,7 +87,7 @@ line-height: 18px;
 
 <!-- End of header-->
  
-    <div class="container">
+    <div class="container main-content">
     
 
         <?php echo $output; ?>
