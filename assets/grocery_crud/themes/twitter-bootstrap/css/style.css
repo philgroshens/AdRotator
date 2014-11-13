@@ -18,7 +18,7 @@ width: 100%;
 height: 60px;
 background-color: #f5f5f5;
 } 
- .text-muted { margin: 20px 0; text-align: center; }
+
  .page-header { margin: 20px 0 20px; }
 .navbar-default .navbar-brand { color: #25aae1; }
 .navbar-default .navbar-brand:hover, .navbar-default .navbar-brand:focus { color: #f9f9f9; }
@@ -27,3 +27,4 @@ background-color: #f5f5f5;
 .navbar-default .navbar-nav>li>a:hover, .navbar-default .navbar-nav>li>a:focus { color: #ffffff; }
 .btn-success:hover, .btn-success:focus, .btn-success:active, .btn-success.active, .open .dropdown-toggle.btn-success { background-color: #1B7AA1; border-color: #25aae1;  } 
 .btn-success { background-color: #25aae1; border-color: #1B7AA1; }
+ .text-muted { margin: 20px 0; text-align: center; }
